@@ -74,7 +74,7 @@ exports.getAllProperties = async (req, res) => {
     const {
       search, type, listingType, city, state,
       minPrice, maxPrice, minArea, maxArea,
-      bedrooms, bathrooms, amenities,
+      bedrooms, bathrooms, amenities, agent,
       sort = '-createdAt', page = 1, limit = 9,
       featured,
     } = req.query;
@@ -89,6 +89,7 @@ exports.getAllProperties = async (req, res) => {
     // Filters
     if (type) query.type = type;
     if (listingType) query.listingType = listingType;
+    if (agent) query.agent = agent;
     if (city) query['location.city'] = { $regex: city, $options: 'i' };
     if (state) query['location.state'] = { $regex: state, $options: 'i' };
     if (featured === 'true') query.isFeatured = true;

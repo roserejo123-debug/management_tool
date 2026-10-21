@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Property = require('../models/Property');
 
 // ─────────────────────────────────────────────
 // @desc    Get all users (Admin)
@@ -135,8 +136,26 @@ exports.getAllAgents = async (req, res) => {
   try {
     const agents = await User.find({ role: 'agent', isActive: true }).select(
       'name email phone bio avatar'
+    ).sort('name').lean();
+    const agentIds = agents.map((agent) => agent._id);
+    const listingCounts = await Property.aggregate([
+      {
+        $match: {
+          agent: { $in: agentIds },
+          isApproved: true,
+          status: 'available',
+        },
+      },
+      { $group: { _id: '$agent', listingCount: { $sum: 1 } } },
+    ]);
+    const countsByAgent = new Map(
+      listingCounts.map(({ _id, listingCount }) => [_id.toString(), listingCount])
     );
-    res.status(200).json({ success: true, agents });
+    const agentsWithListings = agents.map((agent) => ({
+      ...agent,
+      listingCount: countsByAgent.get(agent._id.toString()) || 0,
+    }));
+    res.status(200).json({ success: true, agents: agentsWithListings });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

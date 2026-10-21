@@ -18,8 +18,8 @@ const upload = multer({ dest: 'uploads/' });
 
 // Validation rules
 const registerRules = [
-  body('name').trim().notEmpty().withMessage('Name is required'),
-  body('email').isEmail().withMessage('Valid email required'),
+  body('name').trim().isLength({ min: 2, max: 50 }).withMessage('Name must be between 2 and 50 characters'),
+  body('email').trim().isEmail().withMessage('Enter a valid email address'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
 ];
 

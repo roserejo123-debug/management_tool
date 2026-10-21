@@ -36,7 +36,8 @@ const sendTokenResponse = (user, statusCode, res, message = 'Success') => {
 // ─────────────────────────────────────────────
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role, phone } = req.body;
+    const { name, password, role, phone } = req.body;
+    const email = String(req.body.email || '').trim().toLowerCase();
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -52,6 +53,15 @@ exports.register = async (req, res) => {
     const user = await User.create({ name, email, password, role: assignedRole, phone });
     sendTokenResponse(user, 201, res, 'Registration successful!');
   } catch (error) {
+    if (error.code === 11000 && error.keyPattern?.email) {
+      return res.status(409).json({
+        success: false,
+        message: 'Email already registered. Please login.',
+      });
+    }
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ success: false, message: error.message });
+    }
     res.status(500).json({ success: false, message: error.message });
   }
 };
