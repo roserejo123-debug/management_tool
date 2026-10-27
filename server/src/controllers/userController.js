@@ -1,5 +1,4 @@
 const User = require('../models/User');
-const Property = require('../models/Property');
 
 // ─────────────────────────────────────────────
 // @desc    Get all users (Admin)
@@ -65,7 +64,7 @@ exports.getUserById = async (req, res) => {
 exports.updateUserRole = async (req, res) => {
   try {
     const { role } = req.body;
-    if (!['admin', 'agent', 'user'].includes(role)) {
+    if (!['admin', 'user'].includes(role)) {
       return res.status(400).json({ success: false, message: 'Invalid role.' });
     }
 
@@ -122,40 +121,6 @@ exports.deleteUser = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found.' });
     }
     res.status(200).json({ success: true, message: 'User deleted successfully.' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-// ─────────────────────────────────────────────
-// @desc    Get all agents (Public)
-// @route   GET /api/users/agents
-// @access  Public
-// ─────────────────────────────────────────────
-exports.getAllAgents = async (req, res) => {
-  try {
-    const agents = await User.find({ role: 'agent', isActive: true }).select(
-      'name email phone bio avatar'
-    ).sort('name').lean();
-    const agentIds = agents.map((agent) => agent._id);
-    const listingCounts = await Property.aggregate([
-      {
-        $match: {
-          agent: { $in: agentIds },
-          isApproved: true,
-          status: 'available',
-        },
-      },
-      { $group: { _id: '$agent', listingCount: { $sum: 1 } } },
-    ]);
-    const countsByAgent = new Map(
-      listingCounts.map(({ _id, listingCount }) => [_id.toString(), listingCount])
-    );
-    const agentsWithListings = agents.map((agent) => ({
-      ...agent,
-      listingCount: countsByAgent.get(agent._id.toString()) || 0,
-    }));
-    res.status(200).json({ success: true, agents: agentsWithListings });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

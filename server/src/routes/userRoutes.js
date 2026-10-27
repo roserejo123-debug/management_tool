@@ -6,12 +6,8 @@ const {
   updateUserRole,
   toggleUserStatus,
   deleteUser,
-  getAllAgents,
 } = require('../controllers/userController');
 const { protect, authorize } = require('../middleware/authMiddleware');
-
-// Public
-router.get('/agents', getAllAgents);
 
 // Admin only
 router.use(protect, authorize('admin'));

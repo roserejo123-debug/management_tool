@@ -35,12 +35,12 @@ const RegisterPage = () => {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <div className="auth-logo-icon">🏠</div>
-          <span className="auth-logo-text">PropEstate</span>
+          <div className="auth-logo-icon">📋</div>
+          <span className="auth-logo-text">TaskFlow</span>
         </div>
 
         <h1 className="auth-title">Create Account</h1>
-        <p className="auth-subtitle">Join thousands finding their dream home</p>
+        <p className="auth-subtitle">Start managing your projects like a pro</p>
 
         {error && (
           <div className="alert alert-error">

@@ -47,8 +47,8 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Only allow admin to assign 'admin' or 'agent' role
-    const assignedRole = ['admin', 'agent'].includes(role) ? 'user' : role || 'user';
+    // Only allow admin to assign 'admin' role
+    const assignedRole = role === 'admin' ? 'user' : role || 'user';
 
     const user = await User.create({ name, email, password, role: assignedRole, phone });
     sendTokenResponse(user, 201, res, 'Registration successful!');
@@ -134,7 +134,7 @@ exports.updateProfile = async (req, res) => {
         await cloudinary.uploader.destroy(user.avatar.public_id);
       }
       const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'realestate/avatars',
+        folder: 'taskflow/avatars',
         width: 300,
         crop: 'scale',
       });
@@ -198,7 +198,7 @@ exports.forgotPassword = async (req, res) => {
 
     await sendEmail({
       to: user.email,
-      subject: 'RealEstate - Password Reset Request',
+      subject: 'TaskFlow - Password Reset Request',
       html: `
         <h2>Password Reset</h2>
         <p>Hello ${user.name},</p>

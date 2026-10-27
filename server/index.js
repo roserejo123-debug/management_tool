@@ -7,9 +7,8 @@ const connectDB = require('./src/config/db');
 // Route imports
 const authRoutes = require('./src/routes/authRoutes');
 const userRoutes = require('./src/routes/userRoutes');
-const propertyRoutes = require('./src/routes/propertyRoutes');
-const interactionRoutes = require('./src/routes/interactionRoutes');
-const reviewRoutes = require('./src/routes/reviewRoutes');
+const projectRoutes = require('./src/routes/projectRoutes');
+const taskRoutes = require('./src/routes/taskRoutes');
 const dashboardRoutes = require('./src/routes/dashboardRoutes');
 
 const app = express();
@@ -32,7 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Liveness check
 app.get('/', (req, res) => {
-  res.json({ success: true, message: '🏠 RealEstate API is running!' });
+  res.json({ success: true, message: '📋 TaskFlow API is running!' });
 });
 
 // Readiness check
@@ -48,9 +47,8 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/properties', propertyRoutes);
-app.use('/api', interactionRoutes);
-app.use('/api/properties', reviewRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/tasks', taskRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 // 404 handler
@@ -72,13 +70,7 @@ const PORT = process.env.PORT || 5000;
 
 const requiredEnv = ['MONGO_URI', 'JWT_SECRET', 'CLIENT_URL'];
 if (process.env.NODE_ENV === 'production') {
-  requiredEnv.push(
-    'CLOUDINARY_CLOUD_NAME',
-    'CLOUDINARY_API_KEY',
-    'CLOUDINARY_API_SECRET',
-    'EMAIL_USER',
-    'EMAIL_PASS'
-  );
+  requiredEnv.push('EMAIL_USER', 'EMAIL_PASS');
 }
 const missingEnv = requiredEnv.filter((key) => !process.env[key]?.trim());
 

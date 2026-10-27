@@ -33,12 +33,12 @@ const LoginPage = () => {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <div className="auth-logo-icon">🏠</div>
-          <span className="auth-logo-text">PropEstate</span>
+          <div className="auth-logo-icon">📋</div>
+          <span className="auth-logo-text">TaskFlow</span>
         </div>
 
         <h1 className="auth-title">Welcome Back</h1>
-        <p className="auth-subtitle">Sign in to your account to continue</p>
+        <p className="auth-subtitle">Sign in to manage your projects and tasks</p>
 
         {error && (
           <div className="alert alert-error">

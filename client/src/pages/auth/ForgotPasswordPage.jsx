@@ -28,8 +28,8 @@ const ForgotPasswordPage = () => {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <div className="auth-logo-icon">🏠</div>
-          <span className="auth-logo-text">PropEstate</span>
+          <div className="auth-logo-icon">📋</div>
+          <span className="auth-logo-text">TaskFlow</span>
         </div>
 
         {sent ? (

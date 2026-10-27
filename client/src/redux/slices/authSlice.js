@@ -1,6 +1,17 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import API from '../../utils/axiosInstance';
 
+const getRequestError = (err, fallback) => {
+  const responseMessage = err.response?.data?.message
+    || err.response?.data?.errors?.map((item) => item.message).filter(Boolean).join('. ');
+  if (responseMessage) return responseMessage;
+  if (!err.response) {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    return `Cannot reach the API at ${apiUrl}. Start the backend with "cd server" then "npm start", and check VITE_API_URL.`;
+  }
+  return fallback;
+};
+
 // ─── Async Thunks ─────────────────────────────
 
 export const registerUser = createAsyncThunk(
@@ -11,7 +22,7 @@ export const registerUser = createAsyncThunk(
       localStorage.setItem('token', data.token);
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Registration failed');
+      return rejectWithValue(getRequestError(err, 'Registration failed'));
     }
   }
 );
@@ -24,7 +35,7 @@ export const loginUser = createAsyncThunk(
       localStorage.setItem('token', data.token);
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Login failed');
+      return rejectWithValue(getRequestError(err, 'Login failed'));
     }
   }
 );

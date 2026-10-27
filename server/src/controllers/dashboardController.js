@@ -1,72 +1,60 @@
-const Booking = require('../models/Booking');
-const Enquiry = require('../models/Enquiry');
-const Property = require('../models/Property');
-const Review = require('../models/Review');
-const User = require('../models/User');
-const Wishlist = require('../models/Wishlist');
+const Project = require('../models/Project');
+const Task = require('../models/Task');
 
+// ─────────────────────────────────────────────
+// @desc    Get dashboard summary
+// @route   GET /api/dashboard/summary
+// @access  Private
+// ─────────────────────────────────────────────
 exports.getDashboardSummary = async (req, res) => {
   try {
-    if (req.user.role === 'agent') {
-      const propertyIds = await Property.find({ agent: req.user._id }).distinct('_id');
-      const [listings, views, bookings, enquiries] = await Promise.all([
-        Property.countDocuments({ agent: req.user._id }),
-        Property.aggregate([
-          { $match: { agent: req.user._id } },
-          { $group: { _id: null, total: { $sum: '$views' } } },
-        ]),
-        Booking.countDocuments({ agent: req.user._id }),
-        Enquiry.countDocuments({ property: { $in: propertyIds } }),
-      ]);
-      return res.status(200).json({
-        success: true,
-        summary: {
-          listings,
-          views: views[0]?.total || 0,
-          bookings,
-          enquiries,
-        },
-      });
-    }
+    const userId = req.user._id;
 
-    if (req.user.role === 'admin') {
-      const [
-        users, agents, properties, pendingProperties, bookings, enquiries, reviews,
-        bookingStatuses, listingStatuses, recentProperties,
-      ] = await Promise.all([
-        User.countDocuments(),
-        User.countDocuments({ role: 'agent' }),
-        Property.countDocuments(),
-        Property.countDocuments({ isApproved: false, status: 'pending' }),
-        Booking.countDocuments(),
-        Enquiry.countDocuments(),
-        Review.countDocuments(),
-        Booking.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
-        Property.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
-        Property.find().populate('agent', 'name email').sort('-createdAt').limit(10),
-      ]);
-      return res.status(200).json({
-        success: true,
-        summary: {
-          users, agents, properties, pendingProperties, bookings, enquiries, reviews,
-          bookingStatuses: Object.fromEntries(bookingStatuses.map(({ _id, count }) => [_id, count])),
-          listingStatuses: Object.fromEntries(listingStatuses.map(({ _id, count }) => [_id, count])),
-        },
-        recentProperties,
-      });
-    }
-
-    const [savedProperties, bookings, enquiries, reviews] = await Promise.all([
-      Wishlist.countDocuments({ user: req.user._id }),
-      Booking.countDocuments({ customer: req.user._id }),
-      Enquiry.countDocuments({ sender: req.user._id }),
-      Review.countDocuments({ user: req.user._id }),
+    const [
+      totalProjects,
+      activeProjects,
+      completedProjects,
+      totalTasks,
+      tasksByStatus,
+      recentProjects,
+      recentTasks,
+    ] = await Promise.all([
+      Project.countDocuments({ createdBy: userId }),
+      Project.countDocuments({ createdBy: userId, status: 'active' }),
+      Project.countDocuments({ createdBy: userId, status: 'completed' }),
+      Task.countDocuments({ createdBy: userId }),
+      Task.aggregate([
+        { $lookup: { from: 'projects', localField: 'project', foreignField: '_id', as: 'proj' } },
+        { $unwind: '$proj' },
+        { $match: { 'proj.createdBy': userId } },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
+      Project.find({ createdBy: userId }).sort('-createdAt').limit(5).lean(),
+      Task.find({ createdBy: userId })
+        .populate('project', 'title')
+        .populate('assignedTo', 'name')
+        .sort('-createdAt')
+        .limit(5)
+        .lean(),
     ]);
-    return res.status(200).json({
+
+    const statusMap = Object.fromEntries(tasksByStatus.map(({ _id, count }) => [_id, count]));
+
+    res.status(200).json({
       success: true,
-      summary: { savedProperties, bookings, enquiries, reviews },
+      summary: {
+        totalProjects,
+        activeProjects,
+        completedProjects,
+        totalTasks,
+        todoTasks: statusMap['todo'] || 0,
+        inProgressTasks: statusMap['in-progress'] || 0,
+        doneTasks: statusMap['done'] || 0,
+      },
+      recentProjects,
+      recentTasks,
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };

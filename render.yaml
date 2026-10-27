@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: propestate-api
+    name: taskflow-api
     runtime: node
     rootDir: server
     buildCommand: npm ci

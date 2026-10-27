@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, NavLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
-import { FiHome, FiUser, FiLogOut, FiSettings, FiLayout, FiHeart, FiCalendar, FiMessageSquare, FiBarChart2 } from 'react-icons/fi';
+import { FiUser, FiLogOut, FiLayout, FiFolder, FiChevronDown } from 'react-icons/fi';
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -20,21 +20,20 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="nav-inner">
-        <Link to="/" className="nav-logo">
-          🏠 PropEstate
+        <Link to={isAuthenticated ? '/dashboard' : '/login'} className="nav-logo">
+          📋 TaskFlow
         </Link>
 
-        <div className="nav-links">
-          <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Home
-          </NavLink>
-          <NavLink to="/properties" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Properties
-          </NavLink>
-          <NavLink to="/agents" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Agents
-          </NavLink>
-        </div>
+        {isAuthenticated && (
+          <div className="nav-links">
+            <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <FiLayout style={{ marginRight: 4 }} /> Dashboard
+            </NavLink>
+            <NavLink to="/projects" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <FiFolder style={{ marginRight: 4 }} /> Projects
+            </NavLink>
+          </div>
+        )}
 
         <div>
           {isAuthenticated && user ? (
@@ -56,39 +55,15 @@ const Navbar = () => {
                     <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user.name}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{user.email}</div>
                   </div>
-                  <Link to="/profile" className="dropdown-item">
-                    <FiUser /> My Profile
-                  </Link>
                   <Link to="/dashboard" className="dropdown-item">
                     <FiLayout /> Dashboard
                   </Link>
-                  <Link to="/wishlist" className="dropdown-item">
-                    <FiHeart /> Wishlist
+                  <Link to="/projects" className="dropdown-item">
+                    <FiFolder /> My Projects
                   </Link>
-                  <Link to="/bookings" className="dropdown-item">
-                    <FiCalendar /> {user.role === 'agent' || user.role === 'admin' ? 'Visit Requests' : 'My Bookings'}
+                  <Link to="/profile" className="dropdown-item">
+                    <FiUser /> My Profile
                   </Link>
-                  <Link to="/enquiries" className="dropdown-item">
-                    <FiMessageSquare /> Enquiries
-                  </Link>
-                  {['agent', 'admin'].includes(user.role) && (
-                    <Link to="/my-properties" className="dropdown-item">
-                      <FiHome /> My Properties
-                    </Link>
-                  )}
-                  {user.role === 'admin' && (
-                    <>
-                      <Link to="/admin" className="dropdown-item">
-                        <FiSettings /> User Management
-                      </Link>
-                      <Link to="/admin/properties" className="dropdown-item">
-                        <FiHome /> Property Moderation
-                      </Link>
-                      <Link to="/admin/analytics" className="dropdown-item">
-                        <FiBarChart2 /> Analytics &amp; Reports
-                      </Link>
-                    </>
-                  )}
                   <div className="dropdown-divider" />
                   <button className="dropdown-item" style={{ color: '#ff6b6b' }} onClick={handleLogout}>
                     <FiLogOut /> Logout
