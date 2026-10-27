@@ -126,21 +126,6 @@ exports.updateProfile = async (req, res) => {
     const { name, phone, bio } = req.body;
     const updateData = { name, phone, bio };
 
-    // Handle avatar upload
-    if (req.file) {
-      const cloudinary = require('../config/cloudinary');
-      const user = await User.findById(req.user._id);
-      if (user.avatar && user.avatar.public_id) {
-        await cloudinary.uploader.destroy(user.avatar.public_id);
-      }
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'taskflow/avatars',
-        width: 300,
-        crop: 'scale',
-      });
-      updateData.avatar = { public_id: result.public_id, url: result.secure_url };
-    }
-
     const user = await User.findByIdAndUpdate(req.user._id, updateData, {
       new: true,
       runValidators: true,

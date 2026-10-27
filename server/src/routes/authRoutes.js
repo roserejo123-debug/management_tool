@@ -12,9 +12,6 @@ const {
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 const { validate } = require('../middleware/validateMiddleware');
-const multer = require('multer');
-
-const upload = multer({ dest: 'uploads/' });
 
 // Validation rules
 const registerRules = [
@@ -32,7 +29,7 @@ const loginRules = [
 router.post('/register', registerRules, validate, register);
 router.post('/login', loginRules, validate, login);
 router.get('/me', protect, getMe);
-router.put('/update-profile', protect, upload.single('avatar'), updateProfile);
+router.put('/update-profile', protect, updateProfile);
 router.put('/change-password', protect, changePassword);
 router.post('/forgot-password', forgotPassword);
 router.put('/reset-password/:token', resetPassword);
